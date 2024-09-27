@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebSocket Chat Room</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.5.0/sockjs.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
+</head>
+<body>
+    <h1>WebSocket Chat Room</h1>
+    <div>
+        <input type="text" id="roomName" placeholder="Enter room name..." />
+        <button onclick="createRoom()">Create Room</button>
+    </div>
+    <div id="rooms"></div>
+    
+    <div>
+        <select id="roomSelect" onchange="selectRoom()">
+            <option value="">Select a room</option>
+        </select>
+    </div>
+
+    <div id="messages"></div>
+    <input type="text" id="message" placeholder="Enter message..." />
+    <button onclick="sendMessage()">Send</button>
+
+    <script>
+        var stompClient = null;
+        var currentRoom = '';
+
+        function connect() {
+            var socket = new SockJS('/chat');
+            stompClient = Stomp.over(socket);
+            stompClient.connect({}, function (frame) {
+                console.log('Connected: ' + frame);
+                stompClient.subscribe('/topic/messages/' + currentRoom, function (message) {
+                    showMessage(JSON.parse(message.body));
+                });
+                stompClient.subscribe('/topic/rooms', function (room) {
+                    showRoom(room.body);
+                });
+            });
+        }
+
+        function createRoom() {
+            const roomName = document.getElementById('roomName').value;
+            stompClient.send("/app/createRoom", {}, roomName);
+            document.getElementById('roomName').value = '';
+        }
+
+        function selectRoom() {
+            currentRoom = document.getElementById('roomSelect').value;
+            document.getElementById('messages').innerHTML = ''; // Clear messages
+            stompClient.subscribe('/topic/messages/' + currentRoom, function (message) {
+                showMessage(JSON.parse(message.body));
+            });
+        }
+
+        function sendMessage() {
+            const message = document.getElementById('message').value;
+            if (currentRoom) {
+                stompClient.send("/app/sendMessage", {}, JSON.stringify({
+                    'room': currentRoom,
+                    'sender': 'User',
+                    'content': message
+                }));
+                document.getElementById('message').value = '';
+            } else {
+                alert("Please select a room first!");
+            }
+        }
+
+        function showMessage(message) {
+            var messagesDiv = document.getElementById("messages");
+            messagesDiv.innerHTML += "<div><strong>" + message.sender + ":</strong> " + message.content + "</div>";
+        }
+
+        function showRoom(roomName) {
+            var roomsDiv = document.getElementById("rooms");
+            var roomSelect = document.getElementById("roomSelect");
+            roomsDiv.innerHTML += "<div>" + roomName + "</div>";
+            var option = document.createElement("option");
+            option.value = roomName;
+            option.text = roomName;
+            roomSelect.add(option);
+        }
+
+        connect();
+    </script>
+</body>
+</html>

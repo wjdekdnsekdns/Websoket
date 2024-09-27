@@ -1,0 +1,24 @@
+package com.example.demo.controller;
+
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.GetMapping;
+
+import com.example.demo.repogitory.ChatRoomRepository;
+
+@Controller
+public class ChatController2 {
+	 private final ChatRoomRepository chatRoomRepository;
+
+    @GetMapping("/chat2")
+    public String chatGET(){
+    	System.out.println("@ChatController, chat GET()");
+        return "chater2";
+    }
+    @GetMapping("/home2")
+    public String homeGET(){
+    	System.out.println("@ChatController, chat GET()");
+        return "home2";
+    }
+    
+    
+}

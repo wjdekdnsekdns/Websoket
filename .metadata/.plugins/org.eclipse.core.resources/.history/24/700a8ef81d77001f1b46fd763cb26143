@@ -1,0 +1,54 @@
+package com.example.demo.handler;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.springframework.stereotype.Component;
+import org.springframework.web.socket.CloseStatus;
+import org.springframework.web.socket.TextMessage;
+import org.springframework.web.socket.WebSocketSession;
+import org.springframework.web.socket.handler.TextWebSocketHandler;
+
+@Component
+public class ChatHandler2 extends TextWebSocketHandler {
+    private final Map<String, List<WebSocketSession>> rooms = new HashMap<>();
+
+    @Override
+    protected void handleTextMessage(WebSocketSession session, TextMessage message) throws Exception {
+        String payload = message.getPayload();
+        String[] parts = payload.split(":");
+        if (parts.length < 3) return; // 방 ID, 사용자 이름, 메시지가 필요함
+        
+        String roomId = parts[0];
+        String user = parts[1];
+        String msg = parts[2];
+        System.out.println("payload2 : " + payload);
+
+        // 방에 있는 모든 세션에 메시지 전송
+        if (rooms.containsKey(roomId)) {
+            for (WebSocketSession sess : rooms.get(roomId)) {
+                sess.sendMessage(new TextMessage(user + ": " + msg));
+            }
+        }
+    }
+
+    @Override
+    public void afterConnectionEstablished(WebSocketSession session) throws Exception {
+        String roomId = (String) session.getAttributes().get("roomId"); // 방 ID를 세션에서 가져옴
+        if (roomId != null && !roomId.isEmpty()) {
+            rooms.computeIfAbsent(roomId, k -> new ArrayList<>()).add(session);
+            System.out.println(session + " 클라이언트 접속: " + roomId);
+        }
+    }
+
+    @Override
+    public void afterConnectionClosed(WebSocketSession session, CloseStatus status) throws Exception {
+        // 방에서 세션 제거
+        String roomId = (String) session.getAttributes().get("roomId");
+        if (roomId != null && rooms.containsKey(roomId)) {
+            rooms.get(roomId).remove(session);
+        }
+    }
+}

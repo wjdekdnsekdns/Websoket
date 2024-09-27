@@ -1,0 +1,39 @@
+package com.example.demo.controller;
+
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.GetMapping;
+
+import repogitory.ChatRoomRepository;
+
+@Controller
+public class ChatController2 {
+    
+    @GetMapping("/chat2")
+    public String chatGET(){
+    	System.out.println("@ChatController, chat GET()");
+        return "chater2";
+    }
+    @GetMapping("/home2")
+    public String homeGET(){
+    	System.out.println("@ChatController, chat GET()");
+        return "home2";
+    }
+    
+    
+    private final ChatRoomRepository chatRoomRepository;
+
+    public ChatController(ChatRoomRepository chatRoomRepository) {
+        this.chatRoomRepository = chatRoomRepository;
+    }
+
+    @PostMapping("/rooms")
+    public void createChatRoom(@RequestBody ChatRoomRequest request) {
+        chatRoomRepository.addChatRoom(UUID.randomUUID().toString(), request.getName());
+    }
+
+    @GetMapping("/rooms")
+    public Collection<ChatRoom> getChatRooms() {
+        return chatRoomRepository.getChatRooms();
+    }
+    
+}

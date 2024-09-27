@@ -1,0 +1,44 @@
+package com.example.demo.handler;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
+
+import org.springframework.stereotype.Component;
+import org.springframework.web.socket.CloseStatus;
+import org.springframework.web.socket.TextMessage;
+import org.springframework.web.socket.WebSocketSession;
+import org.springframework.web.socket.handler.TextWebSocketHandler;
+
+@Component
+public class ChatHandler extends TextWebSocketHandler {
+    private static Map<String, List<WebSocketSession>> rooms = new ConcurrentHashMap<>();
+
+    @Override
+    protected void handleTextMessage(WebSocketSession session, TextMessage message) throws Exception {
+        String payload = message.getPayload();
+        String[] parts = payload.split(":", 2); // [roomId, message]
+        String roomId = parts[0];
+        String chatMessage = parts[1];
+
+        // 해당 방의 모든 클라이언트에게 메시지 전송
+        List<WebSocketSession> sessions = rooms.get(roomId);
+        if (sessions != null) {
+            for (WebSocketSession sess : sessions) {
+                sess.sendMessage(new TextMessage("[" + roomId + "] " + chatMessage));
+            }
+        }
+    }
+
+    @Override
+    public void afterConnectionEstablished(WebSocketSession session) throws Exception {
+        // 클라이언트가 방에 연결될 때, 방 ID를 이용해 세션 추가
+        // 방 ID를 추출하는 방법이 필요합니다. (예: URI 파라미터)
+    }
+
+    @Override
+    public void afterConnectionClosed(WebSocketSession session, CloseStatus status) throws Exception {
+        // 방에서 세션 제거
+        // 방 ID를 추출하여 해당 방의 세션 리스트에서 제거해야 합니다.
+    }
+}

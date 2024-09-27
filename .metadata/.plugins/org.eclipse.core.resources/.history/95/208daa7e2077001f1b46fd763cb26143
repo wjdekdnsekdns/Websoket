@@ -1,0 +1,55 @@
+package com.example.demo.handler;
+
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+
+import org.springframework.stereotype.Component;
+import org.springframework.web.socket.CloseStatus;
+import org.springframework.web.socket.TextMessage;
+import org.springframework.web.socket.WebSocketSession;
+import org.springframework.web.socket.handler.TextWebSocketHandler;
+
+@Component
+public class ChatHandler2 extends TextWebSocketHandler {
+    private Map<String, Set<WebSocketSession>> chatRooms = new HashMap<>();
+
+    @Override
+    protected void handleTextMessage(WebSocketSession session, TextMessage message) throws Exception {
+        String payload = message.getPayload();
+        String[] parts = payload.split(":", 3);
+        String roomId = parts[0];
+        String msg = parts[1];
+        
+        for (WebSocketSession sess : chatRooms.get(roomId)) {
+            if (!sess.equals(session)) {
+                sess.sendMessage(new TextMessage(session.getId() + ":" + msg));
+            }
+        }
+    }
+
+    @Override
+    public void afterConnectionEstablished(WebSocketSession session) throws Exception {
+        // 여기서 세션을 방에 추가할 수 있습니다.
+    }
+
+    @Override
+    public void afterConnectionClosed(WebSocketSession session, CloseStatus status) throws Exception {
+        for (Set<WebSocketSession> room : chatRooms.values()) {
+            room.remove(session);
+        }
+    }
+
+    public void addSessionToRoom(String roomId, WebSocketSession session) {
+        chatRooms.putIfAbsent(roomId, new HashSet<>());
+        chatRooms.get(roomId).add(session);
+    }
+
+    public void removeSessionFromRoom(String roomId, WebSocketSession session) {
+        Set<WebSocketSession> room = chatRooms.get(roomId);
+        if (room != null) {
+            room.remove(session);
+        }
+    }
+}

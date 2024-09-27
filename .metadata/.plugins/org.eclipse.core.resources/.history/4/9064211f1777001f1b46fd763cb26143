@@ -1,0 +1,36 @@
+package com.example.demo.handler;
+
+import org.springframework.messaging.handler.annotation.MessageMapping;
+import org.springframework.messaging.handler.annotation.SendTo;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.stereotype.Controller;
+
+import java.util.HashMap;
+import java.util.Map;
+
+@Controller
+public class ChatController {
+
+    private final Map<String, String> rooms = new HashMap<>();
+    private final SimpMessagingTemplate messagingTemplate;
+
+    public ChatController(SimpMessagingTemplate messagingTemplate) {
+        this.messagingTemplate = messagingTemplate;
+    }
+
+    @MessageMapping("/createRoom")
+    @SendTo("/topic/rooms")
+    public String createRoom(String roomName) {
+        rooms.put(roomName, roomName);
+        return roomName;
+    }
+
+    @MessageMapping("/sendMessage")
+    public void sendMessage(ChatMessage chatMessage) {
+        messagingTemplate.convertAndSend("/topic/messages/" + chatMessage.getRoom(), chatMessage);
+    }
+
+    public Map<String, String> getRooms() {
+        return rooms;
+    }
+}

@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>방 생성기</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+
+<div class="container mt-5">
+    <div class="input-group mb-3">
+        <input type="text" id="roomName" class="form-control" placeholder="방 이름을 입력하세요"
+               aria-label="Recipient's username" aria-describedby="button-addon2">
+        <div class="input-group-append">
+            <button class="btn btn-outline-secondary" type="button" id="createRoomBtn">생성</button>
+        </div>
+    </div>
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th>방번호</th>
+                <th>방이름</th>
+            </tr>
+        </thead>
+        <tbody id="roomList">
+            <!-- 방 목록이 여기에 추가됩니다. -->
+        </tbody>
+    </table>
+</div>
+
+<script>
+    $(document).ready(function() {
+        $('#createRoomBtn').click(function() {
+            var roomName = $('#roomName').val().trim(); // 입력값 가져오기
+            var roomList = $('#roomList');
+
+            if (roomName) {
+                var rowCount = roomList.children('tr').length; // 현재 tr의 개수
+                var newRow = $('<tr><td>' + (rowCount + 1) + '</td><td>' + roomName + '</td></tr>');
+                
+                roomList.append(newRow); // 새 행 추가
+                $('#roomName').val(''); // 입력 필드 초기화
+            } else {
+                alert('방 이름을 입력해 주세요.'); // 방 이름이 없으면 경고
+            }
+        });
+    });
+</script>
+
+</body>
+</html>

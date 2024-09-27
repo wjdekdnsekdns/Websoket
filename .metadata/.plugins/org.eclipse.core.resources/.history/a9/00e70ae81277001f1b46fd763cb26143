@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat Room</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.5.0/sockjs.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
+</head>
+<body>
+    <h1>Chat Room</h1>
+    <input id="roomName" placeholder="Enter room name">
+    <button onclick="createRoom()">Create Room</button>
+    <div id="messages"></div>
+    <input id="message" placeholder="Enter message">
+    <button onclick="sendMessage()">Send</button>
+
+    <script>
+        let stompClient = null;
+        let roomName = '';
+        let isSubscribed = false;
+
+        function connect() {
+            const socket = new SockJS('/ws');
+            stompClient = Stomp.over(socket);
+
+            stompClient.connect({}, function(frame) {
+                console.log('Connected: ' + frame);
+                if (roomName && !isSubscribed) {
+                    subscribeToRoom();
+                }
+            });
+        }
+
+        function subscribeToRoom() {
+            stompClient.subscribe('/topic/messages/' + roomName, function(chatMessage) {
+                const messageDiv = document.createElement('div');
+                messageDiv.innerText = chatMessage.body; // 메시지 내용 표시
+                document.getElementById('messages').appendChild(messageDiv);
+            });
+            isSubscribed = true; // 구독 상태 업데이트
+        }
+
+        function createRoom() {
+            roomName = document.getElementById('roomName').value;
+            stompClient.send("/app/createRoom", {}, roomName);
+            connect(); // 방 생성 후 연결
+        }
+
+        function sendMessage() {
+            const message = document.getElementById('message').value;
+            stompClient.send("/app/sendMessage", {}, JSON.stringify({room: roomName, message: message}));
+            document.getElementById('message').value = ''; // 메시지 입력란 비우기
+        }
+
+        // 페이지 로드 시 연결
+        window.onload = function() {
+            connect();
+        };
+    </script>
+</body>
+</html>

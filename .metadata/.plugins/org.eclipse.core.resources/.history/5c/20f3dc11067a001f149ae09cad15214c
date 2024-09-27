@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+	xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+
+<head>
+<link
+	href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css"
+	rel="stylesheet"
+	integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65"
+	crossorigin="anonymous">
+<script
+	src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"
+	integrity="sha384-kenU1KFdBIe4zVF0s0G1M5b4hcpxyD9F7jL+jjXkk+Q2h455rYXK/7HAuoJl+0I4"
+	crossorigin="anonymous"></script>
+<script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+</head>
+
+<body>
+	<table class="table">
+		<thead>
+			<tr>
+				<th scope="col">#</th>
+				<th scope="col">방번호</th>
+			</tr>
+		</thead>
+		<tbody>
+			<tr>
+
+				<th scope="row">1</th>
+				<td>Mark</td>
+				<td>Otto</td>
+				<td>@mdo</td>
+			</tr>
+		</tbody>
+	</table>
+	<div class="input-group mb-3">
+		<input type="text" id="roomName" class="form-control"
+			aria-label="Recipient's username" aria-describedby="button-addon2">
+		<div class="input-group-append">
+			<button class="btn btn-outline-secondary" type="button"
+				id="createRoomBtn">생성</button>
+		</div>
+	</div>
+	<div>
+		<h1>채팅방 목록</h1>
+		<ul id="roomList"></ul>
+
+		<h2>채팅방 생성</h2>
+		<input type="text" id="roomName" placeholder="채팅방 이름" />
+		<button id="createRoomBtn">생성하기</button>
+	</div>
+</body>
+<script>
+        // 페이지 로드 시 채팅방 목록 불러오기
+        window.onload = loadChatRooms;
+
+        // 채팅방 목록을 불러오는 함수
+        function loadChatRooms() {
+            fetch('/chat/rooms')
+                .then(response => response.json())
+                .then(data => {
+                    const roomList = document.getElementById('roomList');
+                    roomList.innerHTML = ''; // 초기화
+                    data.forEach(room => {
+                        const li = document.createElement('li');
+                        li.innerHTML = `<a href="/chat/rooms/${room.id}">${room.name}</a>`;
+                        roomList.appendChild(li);
+                    });
+                })
+                .catch(error => console.error('Error loading chat rooms:', error));
+        }
+
+        // 채팅방 생성 함수
+        document.getElementById('createRoomBtn').addEventListener('click', createChatRoom);
+
+        function createChatRoom() {
+            const roomName = document.getElementById('roomName').value;
+            if (!roomName) {
+                alert('채팅방 이름을 입력하세요.');
+                return;
+            }
+
+            fetch('/chat/rooms', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ name: roomName })
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('방 생성 실패');
+                }
+                return loadChatRooms(); // 방 목록 다시 불러오기
+            })
+            .catch(error => {
+                console.error('Error creating chat room:', error);
+                alert('방 생성 중 오류가 발생했습니다.');
+            });
+        }
+    </script>
+</html>

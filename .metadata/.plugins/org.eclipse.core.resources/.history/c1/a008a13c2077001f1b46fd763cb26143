@@ -1,0 +1,14 @@
+package com.example.demo.controller;
+
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+
+@Controller
+public class ChatController2 {
+	@GetMapping("/chat/{roomId}")
+	public String chatGET(@PathVariable String roomId) {
+	    System.out.println("@ChatController, chat GET() for room: " + roomId);
+	    return "chater"; // 템플릿이 방 ID를 처리할 수 있도록 합니다.
+	}
+}

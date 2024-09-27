@@ -1,0 +1,35 @@
+package com.example.demo.repogitory;
+
+import org.springframework.stereotype.Repository;
+
+import com.example.demo.model.ChatRoom;
+
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
+
+@Repository
+public class ChatRoomRepository {
+    private final Map<String, ChatRoom> chatRoomMap;
+
+    public ChatRoomRepository() {
+        chatRoomMap = new HashMap<>();
+        // 초기 채팅방 추가
+        chatRoomMap.put("1번방", ChatRoom.create("1번방"));
+        chatRoomMap.put("2번방", ChatRoom.create("2번방"));
+        chatRoomMap.put("3번방", ChatRoom.create("3번방"));
+    }
+
+    public ChatRoom getChatRoom(String id) {
+        return chatRoomMap.get(id);
+    }
+    
+    public Collection<ChatRoom> getChatRooms() {
+        return chatRoomMap.values();
+    }
+    
+    // 새로운 채팅방 추가
+    public void addChatRoom(String id, String name) {
+        chatRoomMap.put(id, ChatRoom.create(name));
+    }
+}

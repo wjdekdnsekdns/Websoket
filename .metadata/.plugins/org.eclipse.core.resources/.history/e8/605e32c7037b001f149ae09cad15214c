@@ -1,0 +1,4 @@
+spring.application.name=demo
+
+spring.mvc.view.prefix=/Webapp/WEB-INF/view/
+spring.mvc.view.suffix=.jsp
